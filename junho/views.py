@@ -46,7 +46,7 @@ from django.core.validators          import validate_email
 from django.core.exceptions          import ValidationError
 from django.contrib.sites.shortcuts  import get_current_site
 from django.conf import settings
-
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 
 class PostPageNumberPagination(PageNumberPagination):
     page_size = 12
@@ -99,15 +99,7 @@ class MainPostsViewSet(ModelViewSet):
     search_fields = ['title']  
 
 class PostsAPIView(APIView):
-    # def get(self,request):
-    #     a = Posts.objects.all()
-    #     serializer = PostsSerializer(a,many=True) 
-    #     for i in b:
-    #         b = Posts.objects.filter(id=i.id)
-    #         count = b.aggregate(count= Count('likes'))
-    #         Posts.objects.filter(id=i.id).update(likes_cnt = count['count'])  
-    #     return Response(serializer.data) 
-
+    permission_classes = [IsAuthenticated]
     def post(self,request):
         title = request.data.get('title')
         content = request.data.get('content')
@@ -214,11 +206,10 @@ class Activate(APIView):
                 user.save()
 
                 return redirect('http://54.180.193.83:8080/#/login')
-            return JsonResponse({"message" : "EXPIRE"}, status=400)
-        except ValidationError:
-            return JsonResponse({"message" : "TYPE_ERROR"}, status=400)
-        except KeyError:
-            return JsonResponse({"message" : "INVALID_KEY"}, status=400)
+            
+        except:
+            return redirect('http://54.180.193.83:8080/#/notpage')
+       
         
 class UserPasswdFind(APIView):
     def post(self, request):  
@@ -260,13 +251,10 @@ class PasswdFind(APIView):
             
             if account_activation_token2.check_token(user, token):
                 return redirect('http://54.180.193.83:8080/#/login/loginFind/pwChange/'+uidb64+'/'+token)
-            return JsonResponse({'message':'EXPIRE'}, status=400)
-        except KeyError:
-            return JsonResponse({"message" : "INVALID_KEY"}, status=400)
-        except TypeError:
-            return JsonResponse({"message" : "INVALID_TYPE"}, status=400)
-        except ValidationError:
-            return JsonResponse({"message" : "VALIDATION_ERROR"}, status=400)
+
+
+        except: 
+            return redirect('http://54.180.193.83:8080/#/notpage')
         
         
     def post(self, request):
@@ -355,7 +343,7 @@ class ObjectsAPIView(generics.ListAPIView):
 class PostsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
-    
+    permission_classes = [IsAuthenticatedOrReadOnly]
     def update(self,request,pk):
         title = request.data.get('title')
         content = request.data.get('content')
@@ -392,6 +380,7 @@ class PostsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
 class CommentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     
@@ -418,10 +407,12 @@ class ObjectsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                
         
 class UsertDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
 class CommentAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     
