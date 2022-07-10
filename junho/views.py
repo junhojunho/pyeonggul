@@ -10,8 +10,6 @@ from re import L, M
 from typing import Counter
 from unicodedata import name
 from django.shortcuts import get_object_or_404, render
-from hamcrest import none
-from keyring import set_password
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
