@@ -61,6 +61,13 @@ urlpatterns = [
     
     path('OverLapTest/', views.OverLapTest.as_view()),
     
+    path('board/', views.BoardAPIView.as_view()),
+    path('board/<int:pk>/', views.BoardDetailAPIView.as_view()),
+    
+    path('boardcomment/', views.BoardCommentAPIView.as_view()),
+    path('boardcomment/<int:pk>/', views.BoardCommentDetailAPIView.as_view()),
+    
+    
     path('objects/', views.ObjectsAPIView.as_view()),
     path('objects/<int:pk>/', views.ObjectsDetailAPIView.as_view()),
     

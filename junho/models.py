@@ -21,7 +21,6 @@ class User(AbstractUser):
         unique=True,
     )
 
-
 class Objectss(models.Model):
     id = models.AutoField(primary_key=True)
     store = models.CharField(max_length=100,blank=False, null=False)
@@ -30,6 +29,21 @@ class Objectss(models.Model):
     price = models.IntegerField(blank=False, null=False)
     image = models.ImageField(upload_to='image/',blank=False, null=False)
     
+class Board(models.Model):
+    id = models.AutoField(primary_key=True)
+    username = models.CharField(max_length=20,blank=False, null=False)
+    title = models.CharField(max_length=50, null=False, blank=False)
+    content = models.TextField(null=False,blank=False)
+    create_date= models.DateTimeField(default=timezone.now,blank=False, null=False)
+    modified_date = models.DateTimeField(auto_now=True)
+    
+class BoardComment(models.Model):
+    id = models.AutoField(primary_key=True)
+    comment = models.CharField(max_length=100,null=False,blank=False)
+    username = models.CharField(max_length=20,blank=False, null=False)
+    board_id = models.ForeignKey('Board',related_name='boardcomment',on_delete=models.CASCADE,db_column='board_id')
+    create_date= models.DateTimeField(default=timezone.now,blank=False, null=False)
+    modified_date = models.DateTimeField(auto_now=True)
     
 class Posts(models.Model):
     id = models.AutoField(primary_key=True)

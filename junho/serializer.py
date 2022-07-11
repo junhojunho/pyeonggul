@@ -22,9 +22,18 @@ class PoststagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Poststag
         fields ='__all__'
+        
+class BoardCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BoardComment
+        fields ='__all__'
 
-
-
+class BoardSerializer(serializers.ModelSerializer):
+    boardcomment = BoardCommentSerializer(many=True,read_only=True)
+    class Meta:
+        model = Board
+        fields =('id','title','content','username','create_date','modified_date','boardcomment')
+        
 
 class PostsSerializer(serializers.ModelSerializer):           
     post = CommentSerializer(many=True,read_only=True)
