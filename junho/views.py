@@ -47,6 +47,7 @@ from django.core.exceptions          import ValidationError
 from django.contrib.sites.shortcuts  import get_current_site
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class PostPageNumberPagination(PageNumberPagination):
     page_size = 12
@@ -298,21 +299,21 @@ class UserIdFind(APIView):
             return Response({'username':'가입된 닉네임이 아닙니다.'},status=status.HTTP_400_BAD_REQUEST)
 
 class OverLapTest(APIView):
-    def post(self,request):
+    def get(self,request):
         if request.data.get('email')=='':
-            if User.objects.filter(username = request.data.get('nickname')).exists():
+            if User.objects.filter(username = self.request.query_params.get('nickname')).exists():
                 return Response({'nickname':'이미 사용중인 닉네임 입니다.'})
             else:
                 return Response({'nickname':'사용 가능한 닉네임 입니다.'})
-        elif User.objects.filter(email = request.data.get('email')).exists():
+        elif User.objects.filter(email = self.request.query_params.get('email')).exists():
             return Response({'email':'이미 사용중인 이메일 입니다.'})
         else:
             return Response({'email':'사용 가능한 이메일 입니다.'})
             
             
 class ObjectsPostsSearch(APIView):
-    def post(self,request):
-        objectss_id = request.data.get('objects_id')
+    def get(self,request):
+        objectss_id = self.request.query_params.get('objects_id')
         paginator = PostPageNumberPagination()
         queryset = Posts.objects.filter(choiceitem = objectss_id)
         result_page = paginator.paginate_queryset(queryset, request)
@@ -563,4 +564,10 @@ class CUViewSet(ModelViewSet):
             result_page = paginator.paginate_queryset(queryset, request)
             serializer = CuSerializer(result_page, many=True)
             return paginator.get_paginated_response(serializer.data)
+        
+class BlacklistRefreshView(APIView):
+    def post(self, request):
+        token = RefreshToken(request.data.get('refresh'))
+        token.blacklist()
+        return Response(status=status.HTTP_200_OK)
     

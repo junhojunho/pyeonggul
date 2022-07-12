@@ -55,6 +55,7 @@ urlpatterns = [
     path('user/', views.UserAPIView.as_view()),
     path('user/ReEmail/', views.ReEmailTest.as_view()),
     path('user/<int:pk>/', views.UsertDetailAPIView.as_view()),
+    path('user/logout/',views.BlacklistRefreshView.as_view()),
     
     path('user/passwdfind/', views.UserPasswdFind.as_view()),
     path('user/idfind/', views.UserIdFind.as_view()),
