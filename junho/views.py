@@ -10,8 +10,6 @@ from re import L, M
 from typing import Counter
 from unicodedata import name
 from django.shortcuts import get_object_or_404, render
-# from hamcrest import none
-# from keyring import set_password
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
@@ -289,14 +287,22 @@ class UserIdFind(APIView):
         username = request.data.get('username')
         question = request.data.get('question')
         answer = request.data.get('answer')
-        try:
-            a = User.objects.get(username = username)
-            if a.question == question and a.answer == answer:
-                return Response(a.email) 
-            else:
-                return Response({'question':'질문과 답이 일치하지 않아요'},status=status.HTTP_400_BAD_REQUEST)
-        except:
-            return Response({'username':'가입된 닉네임이 아닙니다.'},status=status.HTTP_400_BAD_REQUEST)
+        
+        a = get_object_or_404(User,username=username)
+        
+        if a.question == question and a.answer == answer:
+            return Response(a.email) 
+        else:
+            return Response({'question':'질문과 답이 일치하지 않아요'},status=status.HTTP_400_BAD_REQUEST)
+        
+        # try:
+        #     a = User.objects.get(username = username)
+        #     if a.question == question and a.answer == answer:
+        #         return Response(a.email) 
+        #     else:
+        #         return Response({'question':'질문과 답이 일치하지 않아요'},status=status.HTTP_400_BAD_REQUEST)
+        # except:
+        #     return Response({'username':'가입된 닉네임이 아닙니다.'},status=status.HTTP_400_BAD_REQUEST)
 
 class OverLapTest(APIView):
     def get(self,request):
