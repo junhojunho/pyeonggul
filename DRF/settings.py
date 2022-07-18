@@ -10,16 +10,19 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+
 from pathlib import Path
 import os
 from datetime import timedelta
+import my_settings
+from MySQLdb import TIME
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(snkgidi3j7q-1=zy*1j7-tip92ci3p2_@)deee7m=ty^-m_hr'
+SECRET_KEY = my_settings.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -33,7 +36,7 @@ SITE_ID = 1
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
@@ -77,19 +80,15 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL=True
-CORS_ORIGIN_WHITELIST=(
-    'http://localhost:8080',
-    'http://127.0.0.1:8080',
-    'http://54.180.193.83:8080',
-    'http://54.180.193.83:80',
-)
+CORS_ORIGIN_ALLOW_ALL=False
+CORS_ORIGIN_WHITELIST=my_settings.CORS_ORIGIN_WHITELIST
+
 
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=365),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=365),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 }
@@ -129,16 +128,7 @@ WSGI_APPLICATION = 'DRF.wsgi.application'
 #     }
 # }
 
-DATABASES = { 
-	'default': { 
-    	'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'pyeonggul', 
-        'USER': 'root1', 
-        'PASSWORD': '123456', 
-        'HOST': 'localhost', 
-        'PORT': '3306',
-     } 
-}
+DATABASES = my_settings.DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -184,6 +174,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+REST_USE_JWT = True
+JWT_AUTH_REFRESH_COOKIE = 'jwt_refresh_token'
+JWT_AUTH_COOKIE = 'jwt_access_token'
+
 PASSWORD_RESET_TIMEOUT = 300
 # ACCOUNT_USER_MODEL_USERNAME_FIELD = False
 # ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
@@ -193,19 +187,20 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-REST_USE_JWT = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-EMAIL_HOST = 'smtp.gmail.com'
-# 메일을 호스트하는 서버
-EMAIL_PORT = '587'
-# gmail과의 통신하는 포트
-EMAIL_HOST_USER = 'wns278@gmail.com'
-# 발신할 이메일
-EMAIL_HOST_PASSWORD = 'zhukzbcmgorpirwn'
-# 발신할 메일의 비밀번호
+
+
+EMAIL_HOST = my_settings.EMAIL_HOST
+
+EMAIL_PORT = my_settings.EMAIL_PORT
+
+EMAIL_HOST_USER = my_settings.EMAIL_HOST_USER
+
+EMAIL_HOST_PASSWORD = my_settings.EMAIL_HOST_PASSWORD
+
 EMAIL_USE_TLS = True
-# TLS 보안 방법
+
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 

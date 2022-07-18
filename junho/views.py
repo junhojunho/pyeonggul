@@ -304,18 +304,19 @@ class UserIdFind(APIView):
         # except:
         #     return Response({'username':'가입된 닉네임이 아닙니다.'},status=status.HTTP_400_BAD_REQUEST)
 
-class OverLapTest(APIView):
+class OverLapEmail(APIView):
     def get(self,request):
-        if request.data.get('email')=='':
-            if User.objects.filter(username = self.request.query_params.get('nickname')).exists():
-                return Response({'nickname':'이미 사용중인 닉네임 입니다.'})
-            else:
-                return Response({'nickname':'사용 가능한 닉네임 입니다.'})
-        elif User.objects.filter(email = self.request.query_params.get('email')).exists():
+        if User.objects.filter(username = self.request.query_params.get('email')).exists():
             return Response({'email':'이미 사용중인 이메일 입니다.'})
         else:
             return Response({'email':'사용 가능한 이메일 입니다.'})
-            
+ 
+class OverLapNickname(APIView):
+    def get(self,request):
+        if User.objects.filter(username = self.request.query_params.get('nickname')).exists():
+            return Response({'nickname':'이미 사용중인 닉네임 입니다.'})
+        else:
+            return Response({'nickname':'사용 가능한 닉네임 입니다.'})
             
 class ObjectsPostsSearch(APIView):
     def get(self,request):
@@ -409,7 +410,7 @@ class CommentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 class BoardAPIView(generics.ListAPIView):
     
-    # permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = BoardSerializer
     queryset = Board.objects.all()
 
@@ -422,7 +423,7 @@ class BoardAPIView(generics.ListAPIView):
             return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
         
 class BoardDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = Board.objects.all()
     serializer_class = BoardSerializer
     
@@ -449,12 +450,12 @@ class BoardDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
 class BoardCommentAPIView(generics.ListCreateAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = BoardComment.objects.all()
     serializer_class = BoardCommentSerializer
 
 class BoardCommentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = BoardComment.objects.all()
     serializer_class = BoardCommentSerializer
     

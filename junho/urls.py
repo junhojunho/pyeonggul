@@ -60,7 +60,8 @@ urlpatterns = [
     path('user/passwdfind/', views.UserPasswdFind.as_view()),
     path('user/idfind/', views.UserIdFind.as_view()),
     
-    path('OverLapTest/', views.OverLapTest.as_view()),
+    path('OverLapEmail/', views.OverLapEmail.as_view()),
+    path('OverLapNickname/', views.OverLapNickname.as_view()),
     
     path('board/', views.BoardAPIView.as_view()),
     path('board/<int:pk>/', views.BoardDetailAPIView.as_view()),
