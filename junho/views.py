@@ -3,6 +3,7 @@ from email.quoprimime import unquote
 import encodings
 from genericpath import exists
 import json
+from turtle import title
 import jwt
 from encodings import utf_8
 from itertools import count
@@ -49,7 +50,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 class PostPageNumberPagination(PageNumberPagination):
     page_size = 12
-
+    
 
 class BestAPIView(APIView):
     def get(self, request,):
@@ -412,8 +413,20 @@ class BoardAPIView(generics.ListAPIView):
     
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = BoardSerializer
-    queryset = Board.objects.all()
-
+    queryset = Board.objects.all().order_by('-create_date')
+    
+    filter_backends = [SearchFilter]
+    search_fields = ['title','content']
+    
+    @action(detail=False, methods=['get'])
+    def search(self,request):
+        paginator = PageNumberPagination()
+        paginator.page_size = 20
+        queryset = Board.objects.filter(title=self.request.query_params.get('title'))
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = BoardSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    
     def post(self,request):
         form = BoardForm(request.data)
         if form.is_valid():
