@@ -51,6 +51,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 class PostPageNumberPagination(PageNumberPagination):
     page_size = 12
     
+class PrivatePageNumberPagination(PageNumberPagination):
+    page_size = 10
+    
 
 class BestAPIView(APIView):
     def get(self, request,):
@@ -65,7 +68,7 @@ class BestAPIView(APIView):
         postid = request.data.get('postid')
         userid = request.data.get('userid')
         
-        if postid or userid == '' or None:
+        if postid or userid == '' or  postid or userid == None:
             Response(status=status.HTTP_400_BAD_REQUEST)
             
         post = get_object_or_404(Posts, id = postid)
@@ -206,6 +209,9 @@ class Activate(APIView):
                 user.save()
 
                 return redirect('http://54.180.193.83:8080/#/login')
+            else:
+                return redirect('http://54.180.193.83:8080/#/notpage')
+                
             
         except:
             return redirect('http://54.180.193.83:8080/#/notpage')
@@ -251,11 +257,10 @@ class PasswdFind(APIView):
             
             if account_activation_token2.check_token(user, token):
                 return redirect('http://54.180.193.83:8080/#/login/loginFind/pwChange/'+uidb64+'/'+token)
-
-
+            else:
+                return redirect('http://54.180.193.83:8080/#/notpage')
         except: 
             return redirect('http://54.180.193.83:8080/#/notpage')
-        
         
     def post(self, request):
         try:
@@ -281,6 +286,8 @@ class PasswdFind(APIView):
             return JsonResponse({"message" : "INVALID_TYPE"}, status=400)
         except ValidationError:
             return JsonResponse({"message" : "VALIDATION_ERROR"}, status=400)
+        except AssertionError:
+            return JsonResponse({"message" : "VALIDATION_ERROR"}, status=400)
  
         
 class UserIdFind(APIView):
@@ -295,27 +302,19 @@ class UserIdFind(APIView):
             return Response(a.email) 
         else:
             return Response({'question':'질문과 답이 일치하지 않아요'},status=status.HTTP_400_BAD_REQUEST)
-        
-        # try:
-        #     a = User.objects.get(username = username)
-        #     if a.question == question and a.answer == answer:
-        #         return Response(a.email) 
-        #     else:
-        #         return Response({'question':'질문과 답이 일치하지 않아요'},status=status.HTTP_400_BAD_REQUEST)
-        # except:
-        #     return Response({'username':'가입된 닉네임이 아닙니다.'},status=status.HTTP_400_BAD_REQUEST)
+
 
 class OverLapEmail(APIView):
     def get(self,request):
-        if User.objects.filter(username = self.request.query_params.get('email')).exists():
-            return Response({'email':'이미 사용중인 이메일 입니다.'})
+        if User.objects.filter(email = self.request.query_params.get('email')).exists():
+            return Response({'email':'사용자의 Email address은/는 이미 존재합니다'})
         else:
             return Response({'email':'사용 가능한 이메일 입니다.'})
  
 class OverLapNickname(APIView):
     def get(self,request):
         if User.objects.filter(username = self.request.query_params.get('nickname')).exists():
-            return Response({'nickname':'이미 사용중인 닉네임 입니다.'})
+            return Response({'nickname':'사용자의 Username은/는 이미 존재합니다.'})
         else:
             return Response({'nickname':'사용 가능한 닉네임 입니다.'})
             
@@ -336,7 +335,6 @@ class ObjectsAPIView(generics.ListAPIView):
     def get(self,request):
         serializer = ObjectsSerializer(Objectss.objects.filter(store=self.request.query_params.get('data')),many=True)
         return Response(serializer.data)
-        
     
     def post(self,request):
         Objectss.objects.create(
@@ -353,6 +351,7 @@ class PostsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    
     def update(self,request,pk):
         title = request.data.get('title')
         content = request.data.get('content')
@@ -390,6 +389,7 @@ class CommentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
     
     def update(self,request,pk):
         a = Comment.objects.get(id=pk)
@@ -418,14 +418,14 @@ class BoardAPIView(generics.ListAPIView):
     filter_backends = [SearchFilter]
     search_fields = ['title','content']
     
-    @action(detail=False, methods=['get'])
-    def search(self,request):
-        paginator = PageNumberPagination()
-        paginator.page_size = 20
-        queryset = Board.objects.filter(title=self.request.query_params.get('title'))
-        result_page = paginator.paginate_queryset(queryset, request)
-        serializer = BoardSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+    # @action(detail=False, methods=['get'])
+    # def search(self,request):
+    #     paginator = PageNumberPagination()
+    #     paginator.page_size = 20
+    #     queryset = Board.objects.filter(title=self.request.query_params.get('title'))
+    #     result_page = paginator.paginate_queryset(queryset, request)
+    #     serializer = BoardSerializer(result_page, many=True)
+    #     return paginator.get_paginated_response(serializer.data)
     
     def post(self,request):
         form = BoardForm(request.data)
@@ -436,7 +436,7 @@ class BoardAPIView(generics.ListAPIView):
             return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
         
 class BoardDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Board.objects.all()
     serializer_class = BoardSerializer
     
@@ -466,6 +466,7 @@ class BoardCommentAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = BoardComment.objects.all()
     serializer_class = BoardCommentSerializer
+    
 
 class BoardCommentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
@@ -487,11 +488,75 @@ class BoardCommentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     
     def destroy(self, request,pk):
         a = BoardComment.objects.get(id=pk)
-        if a.username == request.data.get('nickname'):
+        if a.username == request.data.get('username'):
             self.perform_destroy(a)
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+class PrivatePosts(APIView):
+    def get(self,request):
+        username = self.request.query_params.get('username')
+        paginator = PrivatePageNumberPagination()
+        queryset = Posts.objects.filter(nickname = username)
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = PostsSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    
+class PrivateLikes(APIView):
+    def get(self,request):
+        user_id = self.request.query_params.get('user_id')
+        paginator = PrivatePageNumberPagination()
+        queryset = Posts.objects.filter(likes = user_id)
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = PostsSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    
+class PrivateBoard(APIView):
+    def get(self,request):
+        username = self.request.query_params.get('username')
+        paginator = PrivatePageNumberPagination()
+        queryset = Board.objects.filter(username = username)
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = BoardSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+class PrivateComment(APIView):
+    def get(self,request):
+        username = self.request.query_params.get('username')
+        paginator = PrivatePageNumberPagination()
+        queryset = BoardComment.objects.filter(username = username)
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = BoardCommentSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    
+class PersonalInformation(APIView):
+    def update(self,request):
+        
+        user = User.objects.get(username=request.data.get('usernama'))
+        if request.data.get('new_password1')=='':
+            user.question = request.data.get('question')
+            user.answer = request.data.get('answer')
+            user.save()
+            return Response(status=200)
+        
+        else:   
+            data = {
+            'new_password1': request.data.get('new_password1'),
+            'new_password2': request.data.get('new_password2')
+            }
+            form = SetPasswordForm(user, data)
+            if form.is_valid():
+                user.question = request.data.get('question')
+                user.answer = request.data.get('answer')
+                form.save()
+                user.save()
+                return Response(status=200)
+            else:
+                return Response(form.errors,status=400)
+        
+        
+    
 
 class ObjectsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Objectss.objects.all()

@@ -47,7 +47,7 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
     path('posts/', views.PostsAPIView.as_view()),
-    path('posts/<int:pk>',views.PostsDetailAPIView.as_view()),
+    path('posts/<int:pk>/',views.PostsDetailAPIView.as_view()),
     
     path('comment/', views.CommentAPIView.as_view()),
     path('comment/<int:pk>/', views.CommentDetailAPIView.as_view()),
@@ -69,6 +69,11 @@ urlpatterns = [
     path('boardcomment/', views.BoardCommentAPIView.as_view()),
     path('boardcomment/<int:pk>/', views.BoardCommentDetailAPIView.as_view()),
     
+    path('privateLikes/', views.PrivateLikes.as_view()),
+    path('privateposts/', views.PrivatePosts.as_view()),
+    path('privateboard/', views.PrivateBoard.as_view()),
+    path('privatecomment/', views.PrivateComment.as_view()),
+    path('personalinfomation/', views.PersonalInformation.as_view()),
     
     path('objects/', views.ObjectsAPIView.as_view()),
     path('objects/<int:pk>/', views.ObjectsDetailAPIView.as_view()),
