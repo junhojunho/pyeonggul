@@ -299,7 +299,9 @@ class UserIdFind(APIView):
         a = get_object_or_404(User,username=username)
         
         if a.question == question and a.answer == answer:
-            return Response(a.email) 
+            useremail,b = a.email.split('@')
+            useremail = useremail.replace(useremail[len(useremail)-4:len(useremail)],'****')
+            return Response(useremail+'@'+ b) 
         else:
             return Response({'question':'질문과 답이 일치하지 않아요'},status=status.HTTP_400_BAD_REQUEST)
 
@@ -348,9 +350,9 @@ class ObjectsAPIView(generics.ListAPIView):
         return Response(serializer.data)
     
 class PostsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
     
     def update(self,request,pk):
         title = request.data.get('title')
@@ -440,6 +442,14 @@ class BoardDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Board.objects.all()
     serializer_class = BoardSerializer
     
+    def get(self,reqeust,pk):
+        hitcount = get_object_or_404(Board, id = pk)
+        hitcount.hits += 1
+        hitcount.save()
+        serializers = BoardSerializer(hitcount)
+        return Response(serializers.data)
+
+        
     def update(self,request,pk):
         a = Board.objects.get(id=pk)
         form = BoardForm(request.data)
@@ -473,6 +483,7 @@ class BoardCommentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = BoardComment.objects.all()
     serializer_class = BoardCommentSerializer
     
+        
     def update(self,request,pk):
         a = BoardComment.objects.get(id=pk)
         form = BoardCommentForm(request.data)
@@ -498,7 +509,7 @@ class PrivatePosts(APIView):
     def get(self,request):
         username = self.request.query_params.get('username')
         paginator = PrivatePageNumberPagination()
-        queryset = Posts.objects.filter(nickname = username)
+        queryset = Posts.objects.filter(nickname = username).order_by('-create_date')
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = PostsSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
@@ -507,7 +518,7 @@ class PrivateLikes(APIView):
     def get(self,request):
         user_id = self.request.query_params.get('user_id')
         paginator = PrivatePageNumberPagination()
-        queryset = Posts.objects.filter(likes = user_id)
+        queryset = Posts.objects.filter(likes = user_id).order_by('-create_date')
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = PostsSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
@@ -516,24 +527,33 @@ class PrivateBoard(APIView):
     def get(self,request):
         username = self.request.query_params.get('username')
         paginator = PrivatePageNumberPagination()
-        queryset = Board.objects.filter(username = username)
+        queryset = Board.objects.filter(username = username).order_by('-create_date')
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = BoardSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-class PrivateComment(APIView):
+class PrivateBoardComment(APIView):
     def get(self,request):
         username = self.request.query_params.get('username')
         paginator = PrivatePageNumberPagination()
-        queryset = BoardComment.objects.filter(username = username)
+        queryset = BoardComment.objects.filter(username = username).order_by('-create_date')
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = BoardCommentSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    
+class PrivatePostsComment(APIView):
+    def get(self,request):
+        nickname = self.request.query_params.get('username')
+        paginator = PrivatePageNumberPagination()
+        queryset = Comment.objects.filter(nickname = nickname).order_by('-create_date')
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = CommentSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
     
 class PersonalInformation(APIView):
     def update(self,request):
         
-        user = User.objects.get(username=request.data.get('usernama'))
+        user = get_object_or_404(username=request.data.get('usernama'))
         if request.data.get('new_password1')=='':
             user.question = request.data.get('question')
             user.answer = request.data.get('answer')

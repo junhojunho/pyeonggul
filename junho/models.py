@@ -34,6 +34,7 @@ class Board(models.Model):
     username = models.CharField(max_length=20,blank=False, null=False)
     title = models.CharField(max_length=50, null=False, blank=False)
     content = models.TextField(null=False,blank=False)
+    hits = models.PositiveIntegerField(default=0)
     create_date= models.DateTimeField(default=timezone.now,blank=False, null=False)
     modified_date = models.DateTimeField(auto_now=True)
     

@@ -72,7 +72,8 @@ urlpatterns = [
     path('privateLikes/', views.PrivateLikes.as_view()),
     path('privateposts/', views.PrivatePosts.as_view()),
     path('privateboard/', views.PrivateBoard.as_view()),
-    path('privatecomment/', views.PrivateComment.as_view()),
+    path('privateboardcomment/', views.PrivateBoardComment.as_view()),
+    path('privatepostscomment/', views.PrivatePostsComment.as_view()),
     path('personalinfomation/', views.PersonalInformation.as_view()),
     
     path('objects/', views.ObjectsAPIView.as_view()),
