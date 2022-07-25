@@ -324,7 +324,7 @@ class ObjectsPostsSearch(APIView):
     def get(self,request):
         objectss_id = self.request.query_params.get('objects_id')
         paginator = PostPageNumberPagination()
-        queryset = Posts.objects.filter(choiceitem = objectss_id)
+        queryset = Posts.objects.filter(choiceitem = objectss_id).order_by('-create_date')
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = PostsSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
@@ -335,9 +335,13 @@ class ObjectsAPIView(generics.ListAPIView):
     queryset = Objectss.objects.all()
         
     def get(self,request):
-        serializer = ObjectsSerializer(Objectss.objects.filter(store=self.request.query_params.get('data')),many=True)
-        return Response(serializer.data)
-    
+        paginator = PageNumberPagination()
+        paginator.page_size = 20
+        queryset = Objectss.objects.filter(store=self.request.query_params.get('data'))
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = ObjectsSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
     def post(self,request):
         Objectss.objects.create(
             store = request.data.get('store'),
@@ -551,16 +555,14 @@ class PrivatePostsComment(APIView):
         return paginator.get_paginated_response(serializer.data)
     
 class PersonalInformation(APIView):
-    def update(self,request):
-        
-        user = get_object_or_404(username=request.data.get('usernama'))
+    def patch(self,request):       
+        user = get_object_or_404(User,username=request.data.get('username'))
         if request.data.get('new_password1')=='':
             user.question = request.data.get('question')
             user.answer = request.data.get('answer')
             user.save()
             return Response(status=200)
-        
-        else:   
+        else:
             data = {
             'new_password1': request.data.get('new_password1'),
             'new_password2': request.data.get('new_password2')
@@ -575,25 +577,28 @@ class PersonalInformation(APIView):
             else:
                 return Response(form.errors,status=400)
         
-        
-    
-
 class ObjectsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Objectss.objects.all()
     serializer_class = ObjectsSerializer
                
         
 class UsertDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    
+    permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
+    def get(self,request,pk):
+        user = get_object_or_404(User,id=pk)
+        return Response({"nickname":user.username,
+            "email" : user.email,
+            "question" : user.question,
+            "answer" : user.answer})
+        
 class CommentAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     
- 
  
 class MINISTOPViewSet(ModelViewSet):
     queryset = MINISTOP.objects.all()
