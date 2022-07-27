@@ -47,6 +47,7 @@ from django.contrib.sites.shortcuts  import get_current_site
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.hashers import check_password
 
 class PostPageNumberPagination(PageNumberPagination):
     page_size = 12
@@ -593,6 +594,14 @@ class UsertDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             "email" : user.email,
             "question" : user.question,
             "answer" : user.answer})
+        
+class CheckPassword(APIView):
+    def post(self,request):
+        user = get_object_or_404(User,id=request.data.get('id'))
+        if check_password(request.data.get('password'),user.password):
+            return Response(status=200)
+        else:
+            return Response(status=400)
         
 class CommentAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]

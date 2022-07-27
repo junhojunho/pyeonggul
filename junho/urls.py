@@ -79,6 +79,8 @@ urlpatterns = [
     path('objects/', views.ObjectsAPIView.as_view()),
     path('objects/<int:pk>/', views.ObjectsDetailAPIView.as_view()),
     
+    path('checkpassword/', views.CheckPassword.as_view()),
+    
     path('objectssearch/', views.ObjectsPostsSearch.as_view()),
     
     path('accounts/activate/<str:uidb64>/<str:token>', Activate.as_view()),
