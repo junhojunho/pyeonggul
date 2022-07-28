@@ -35,6 +35,7 @@ class Board(models.Model):
     title = models.CharField(max_length=50, null=False, blank=False)
     content = models.TextField(null=False,blank=False)
     hits = models.PositiveIntegerField(default=0)
+    image = models.ImageField(upload_to='board/',blank=True, null=True)
     create_date= models.DateTimeField(default=timezone.now,blank=False, null=False)
     modified_date = models.DateTimeField(auto_now=True)
     
@@ -54,7 +55,7 @@ class Posts(models.Model):
     nickname = models.CharField(max_length=10,blank=False, null=False)
     likes = models.ManyToManyField(User,related_name='likes_user',blank=True, null=True)
     likes_cnt = models.IntegerField(blank=True, null=True)
-    # image = models.ImageField(blank=True, null=True)
+    image = models.ImageField(upload_to='posts/',blank=True, null=True)
     choiceitem = models.ManyToManyField(Objectss,through='Poststag',related_name='Objects_id',blank=False, null=False)
     create_date= models.DateTimeField(default=timezone.now,blank=False, null=False)
     modified_date = models.DateTimeField(auto_now=True)

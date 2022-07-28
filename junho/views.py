@@ -3,6 +3,7 @@ from email.quoprimime import unquote
 import encodings
 from genericpath import exists
 import json
+from tkinter import Image
 from turtle import title
 import jwt
 from encodings import utf_8
@@ -103,12 +104,13 @@ class MainPostsViewSet(ModelViewSet):
     search_fields = ['title']  
 
 class PostsAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def post(self,request):
         title = request.data.get('title')
         content = request.data.get('content')
         nickname = request.data.get('nickname')
         objectsid = request.data.get('item')
+        # image = request.FILES('image')
         
         if title == "" or None :
             return Response(1,status=status.HTTP_400_BAD_REQUEST)
@@ -127,6 +129,7 @@ class PostsAPIView(APIView):
                 title = title,
                 content = content,
                 nickname=nickname,
+                # image=image,
                 likes_cnt=0,
             )
             a.save()
@@ -424,15 +427,6 @@ class BoardAPIView(generics.ListAPIView):
     
     filter_backends = [SearchFilter]
     search_fields = ['title','content']
-    
-    # @action(detail=False, methods=['get'])
-    # def search(self,request):
-    #     paginator = PageNumberPagination()
-    #     paginator.page_size = 20
-    #     queryset = Board.objects.filter(title=self.request.query_params.get('title'))
-    #     result_page = paginator.paginate_queryset(queryset, request)
-    #     serializer = BoardSerializer(result_page, many=True)
-    #     return paginator.get_paginated_response(serializer.data)
     
     def post(self,request):
         form = BoardForm(request.data)
