@@ -104,32 +104,24 @@ class MainPostsViewSet(ModelViewSet):
     search_fields = ['title']  
 
 class PostsAPIView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def post(self,request):
-        title = request.data.get('title')
-        content = request.data.get('content')
+        title = request.POST.get('title')
+        content = request.POST.get('content')
         nickname = request.data.get('nickname')
         objectsid = request.data.get('item')
-        # image = request.FILES('image')
-        
-        if title == "" or None :
-            return Response(1,status=status.HTTP_400_BAD_REQUEST)
+        image = request.data.get('image')
         
         if objectsid == []:
-            return Response(2,status=status.HTTP_400_BAD_REQUEST)
-        
-        if content == "" or None:
-            return Response(3,status=status.HTTP_400_BAD_REQUEST)        
-        
+            return Response({'item':'조합아이템을 선택해주세요'},status=status.HTTP_400_BAD_REQUEST)
+
         form = PostsForm(request.data)
         if form.is_valid():
-            if objectsid == []:
-                return Response({'item':'조합아이템을 선택해주세요'},status=status.HTTP_400_BAD_REQUEST)
             a = Posts.objects.create(
                 title = title,
                 content = content,
                 nickname=nickname,
-                # image=image,
+                image=image,
                 likes_cnt=0,
             )
             a.save()
@@ -138,7 +130,7 @@ class PostsAPIView(APIView):
                 a.choiceitem.add(b)
                 aa = Poststag.objects.filter(posts=a.id).filter(objectss=b)
                 aa.update(name = bb.name, type = bb.type, price = bb.price, image = bb.image)
-            return Response('작성완료되었습니다')
+            return Response('작성완료되었습니다',status=200)
         else:
             return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
         

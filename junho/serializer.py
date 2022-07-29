@@ -34,7 +34,7 @@ class BoardSerializer(serializers.ModelSerializer):
     boardcomment = BoardCommentSerializer(many=True,read_only=True)
     class Meta:
         model = Board
-        fields =('id','title','content','username','create_date','modified_date','boardcomment','hits')
+        fields =('id','title','content','username','create_date','modified_date','boardcomment','hits','image')
 
 class CommentSerializer(serializers.ModelSerializer):
     reply = serializers.SerializerMethodField()
@@ -52,7 +52,7 @@ class PostsSerializer(serializers.ModelSerializer):
     a = PoststagSerializer(source = 'poststag_set',many=True)
     class Meta: 
         model = Posts
-        fields = ('id','title','content','nickname','likes_cnt','create_date','modified_date','likes','post','a') 
+        fields = ('id','title','content','nickname','likes_cnt','create_date','modified_date','likes','post','a','image') 
         
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
