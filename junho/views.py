@@ -106,8 +106,8 @@ class MainPostsViewSet(ModelViewSet):
 class PostsAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self,request):
-        title = request.POST.get('title')
-        content = request.POST.get('content')
+        title = request.data.get('title')
+        content = request.data.get('content')
         nickname = request.data.get('nickname')
         objectsid = request.data.get('item')
         image = request.data.get('image')
