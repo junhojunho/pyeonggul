@@ -1,13 +1,6 @@
-import email
+
 from email.quoprimime import unquote
-import encodings
 from genericpath import exists
-import json
-from tkinter import Image
-from turtle import title
-import jwt
-from encodings import utf_8
-from itertools import count
 from re import L, M
 from typing import Counter
 from unicodedata import name
@@ -26,12 +19,8 @@ from rest_framework.renderers import JSONRenderer
 from django.http import JsonResponse,HttpResponse
 from .forms import  BoardCommentForm, BoardForm, SignupForm , PostsForm
 from django.contrib.auth.forms import SetPasswordForm
-from rest_framework.permissions import AllowAny
-import string
-import random
 from rest_framework import mixins
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.hashers import PBKDF2SHA1PasswordHasher,PBKDF2PasswordHasher
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
@@ -59,7 +48,6 @@ class PrivatePageNumberPagination(PageNumberPagination):
 
 class BestAPIView(APIView):
     def get(self, request,):
-        
         paginator = PostPageNumberPagination()
         queryset = Posts.objects.all().order_by('-likes_cnt')
         result_page = paginator.paginate_queryset(queryset, request)
