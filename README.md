@@ -18,7 +18,7 @@
 	    -django  
 	    -DRF  
 	    -mysql  	   
-	    - aws, gunicorn,ngingx
+	    - aws, gunicorn, ngingx
   
 --해결중인 백엔드 문제--
 1. ssl 적용하여 https사용. 통신데이터 암호화 필요.  
