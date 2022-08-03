@@ -47,6 +47,7 @@ class PrivatePageNumberPagination(PageNumberPagination):
     
 
 class BestAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     def get(self, request,):
         paginator = PostPageNumberPagination()
         queryset = Posts.objects.all().order_by('-likes_cnt')
@@ -84,7 +85,6 @@ class BestAPIView(APIView):
             return Response('좋아요')
         
 class MainPostsViewSet(ModelViewSet):
-                
     queryset = Posts.objects.all().order_by('-create_date')
     serializer_class = PostsSerializer      
     pagination_class = PostPageNumberPagination
@@ -100,9 +100,11 @@ class PostsAPIView(APIView):
         objectsid = request.data.get('item')
         image = request.data.get('image')
         
-        if objectsid == []:
+        if objectsid == [] or objectsid == None or objectsid == '':
             return Response({'item':'조합아이템을 선택해주세요'},status=status.HTTP_400_BAD_REQUEST)
-
+        
+        objectsid = objectsid.split(',')
+        
         form = PostsForm(request.data)
         if form.is_valid():
             a = Posts.objects.create(

@@ -15,7 +15,7 @@ class BoardForm(forms.ModelForm):
 class PostsForm(forms.ModelForm):
       class Meta:
           model = Posts
-          fields = ['title', 'content','nickname']
+          fields = ['title', 'content','nickname','image']
 
 class BoardCommentForm(forms.ModelForm):
       class Meta:
