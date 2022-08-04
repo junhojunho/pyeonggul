@@ -348,6 +348,7 @@ class PostsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         title = request.data.get('title')
         content = request.data.get('content')
         nickname = request.data.get('nickname')
+        image = request.data.get('image')
         objectsid = request.data.get('item')
         a = Posts.objects.get(id=pk)
         form = PostsForm(request.data)
@@ -357,7 +358,7 @@ class PostsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                 a.content = content
                 a.save()
                 aa = Poststag.objects.filter(posts=a.id)
-                aa.delete() 
+                aa.delete()       
                 for b in objectsid:             
                     bb = Objectss.objects.get(id=b)
                     a.choiceitem.add(b)
