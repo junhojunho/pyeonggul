@@ -10,7 +10,7 @@ class SignupForm(UserCreationForm):
 class BoardForm(forms.ModelForm):
       class Meta:
           model = Board
-          fields = ['username','title','content']
+          fields = ['username','title','content','image']
           
 class PostsForm(forms.ModelForm):
       class Meta:

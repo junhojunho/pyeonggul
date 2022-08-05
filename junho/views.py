@@ -414,7 +414,12 @@ class BoardAPIView(generics.ListAPIView):
     def post(self,request):
         form = BoardForm(request.data)
         if form.is_valid():
-            form.save()
+            Board.objects.create(
+                username = request.data.get('username'),
+                title = request.data.get('title'),
+                content = request.data.get('content'),
+                image = request.data.get('image'),
+            )
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
