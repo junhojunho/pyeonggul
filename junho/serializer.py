@@ -11,8 +11,11 @@ class ObjectsSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 
-
-        
+class NoticeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notice
+        fields= '__all__'
+          
 class PoststagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Poststag
@@ -32,10 +35,16 @@ class BoardCommentSerializer(serializers.ModelSerializer):
 
 class BoardSerializer(serializers.ModelSerializer):
     boardcomment = BoardCommentSerializer(many=True,read_only=True)
+    Notice = serializers.SerializerMethodField()
+    
+    def get_Notice(self,obj):
+        return NoticeSerializer(Notice.objects.all().order_by('-create_date'),many=True).data
+
     class Meta:
         model = Board
-        fields =('id','title','content','username','create_date','modified_date','boardcomment','hits','image')
-
+        fields =('id','title','content','username','create_date','modified_date','boardcomment','hits','image','Notice')
+        
+            
 class CommentSerializer(serializers.ModelSerializer):
     reply = serializers.SerializerMethodField()
     class Meta:

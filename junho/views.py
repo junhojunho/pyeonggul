@@ -35,7 +35,7 @@ from django.core.validators          import validate_email
 from django.core.exceptions          import ValidationError
 from django.contrib.sites.shortcuts  import get_current_site
 from django.conf import settings
-from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly,IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 
@@ -89,7 +89,7 @@ class MainPostsViewSet(ModelViewSet):
     serializer_class = PostsSerializer      
     pagination_class = PostPageNumberPagination
     filter_backends = [SearchFilter]
-    search_fields = ['title']  
+    search_fields = ['title','content']
 
 class PostsAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -298,14 +298,12 @@ class OverLapEmail(APIView):
             return Response({'email':'사용자의 Email address은/는 이미 존재합니다'})
         else:
             return Response({'email':'사용 가능한 이메일 입니다.'})
- 
 class OverLapNickname(APIView):
     def get(self,request):
         if User.objects.filter(username = self.request.query_params.get('nickname')).exists():
             return Response({'nickname':'사용자의 Username은/는 이미 존재합니다.'})
         else:
-            return Response({'nickname':'사용 가능한 닉네임 입니다.'})
-            
+            return Response({'nickname':'사용 가능한 닉네임 입니다.'})           
 class ObjectsPostsSearch(APIView):
     def get(self,request):
         objectss_id = self.request.query_params.get('objects_id')
@@ -313,8 +311,7 @@ class ObjectsPostsSearch(APIView):
         queryset = Posts.objects.filter(choiceitem = objectss_id).order_by('-create_date')
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = PostsSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
-    
+        return paginator.get_paginated_response(serializer.data)    
 class ObjectsAPIView(generics.ListAPIView):
     
     serializer_class = ObjectsSerializer
@@ -338,24 +335,22 @@ class ObjectsAPIView(generics.ListAPIView):
         )
         serializer = ObjectsSerializer(Objectss.objects.all(),many=True)
         return Response(serializer.data)
-    
+  
 class PostsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
     
     def update(self,request,pk):
-        title = request.data.get('title')
-        content = request.data.get('content')
         nickname = request.data.get('nickname')
-        image = request.data.get('image')
         objectsid = request.data.get('item')
         a = Posts.objects.get(id=pk)
         form = PostsForm(request.data)
         if form.is_valid():
             if a.nickname == nickname:
-                a.title = title
-                a.content = content
+                a.title = request.data.get('title')
+                a.content = request.data.get('content')
+                # a.image = request.data.get('image')
                 a.save()
                 aa = Poststag.objects.filter(posts=a.id)
                 aa.delete()       
@@ -413,6 +408,18 @@ class BoardAPIView(generics.ListAPIView):
     
     def post(self,request):
         form = BoardForm(request.data)
+        if request.data.get('username') == 'admin':
+            if form.is_valid():
+                Notice.objects.create(
+                username = request.data.get('username'),
+                title = request.data.get('title'),
+                content = request.data.get('content'),
+                image = request.data.get('image'),
+            )
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
+
         if form.is_valid():
             Board.objects.create(
                 username = request.data.get('username'),
@@ -420,6 +427,7 @@ class BoardAPIView(generics.ListAPIView):
                 content = request.data.get('content'),
                 image = request.data.get('image'),
             )
+
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -436,7 +444,6 @@ class BoardDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         serializers = BoardSerializer(hitcount)
         return Response(serializers.data)
 
-        
     def update(self,request,pk):
         a = Board.objects.get(id=pk)
         form = BoardForm(request.data)
@@ -458,6 +465,36 @@ class BoardDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+class NoticeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = Notice.objects.all()
+    serializer_class = NoticeSerializer
+    
+    def get(self,reqeust,pk):
+        hitcount = get_object_or_404(Notice, id = pk)
+        hitcount.hits += 1
+        hitcount.save()
+        serializers = NoticeSerializer(hitcount)
+        return Response(serializers.data)
+    
+ 
+    def update(self,request,pk):
+        notice = get_object_or_404(Notice,pk=pk)
+        serializer = NoticeSerializer(notice,data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=200)
+        else:
+            return Response(serializer.errors,status=400)
+                    
+        
+    def destroy(self, request,pk):
+        a = Notice.objects.get(id=pk)
+        self.perform_destroy(a)
+        return Response(status=status.HTTP_200_OK)
+
         
 class BoardCommentAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]

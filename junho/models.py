@@ -39,6 +39,16 @@ class Board(models.Model):
     create_date= models.DateTimeField(default=timezone.now,blank=False, null=False)
     modified_date = models.DateTimeField(auto_now=True)
     
+class Notice(models.Model):
+    id = models.AutoField(primary_key=True)
+    username = models.CharField(max_length=20,blank=False, null=False)
+    title = models.CharField(max_length=50, null=False, blank=False)
+    content = models.TextField(null=False,blank=False)
+    hits = models.PositiveIntegerField(default=0)
+    image = models.ImageField(upload_to='image/Notice/',blank=True, null=True)
+    create_date= models.DateTimeField(default=timezone.now,blank=False, null=False)
+    modified_date = models.DateTimeField(auto_now=True)
+    
 class BoardComment(models.Model):
     id = models.AutoField(primary_key=True)
     comment = models.CharField(max_length=100,null=False,blank=False)

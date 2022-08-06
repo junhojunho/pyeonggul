@@ -83,6 +83,8 @@ urlpatterns = [
     
     path('objectssearch/', views.ObjectsPostsSearch.as_view()),
     
+    path('notice/<int:pk>/', views.NoticeDetailAPIView.as_view()),
+    
     path('accounts/activate/<str:uidb64>/<str:token>', Activate.as_view()),
     path('accounts/passwd/<str:uidb64>/<str:token>', PasswdFind.as_view()),
     path('accounts/passwd/changetest/', PasswdFind.as_view()),
