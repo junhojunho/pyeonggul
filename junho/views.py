@@ -17,7 +17,7 @@ from django.db.models import F, Sum, Count, Case, When
 from urllib.parse import unquote, quote, quote_plus, urlencode
 from rest_framework.renderers import JSONRenderer
 from django.http import JsonResponse,HttpResponse
-from .forms import  BoardCommentForm, BoardForm, SignupForm , PostsForm
+from .forms import  BoardCommentForm, BoardForm, CommentForm, NoticeForm, SignupForm , PostsForm
 from django.contrib.auth.forms import SetPasswordForm
 from rest_framework import mixins
 from django.contrib.auth.hashers import make_password
@@ -341,17 +341,15 @@ class PostsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
     
-    def update(self,request,pk):
+    def update(self,request,pk,**kwargs):
         nickname = request.data.get('nickname')
         objectsid = request.data.get('item')
+        objectsid = objectsid.split(',')
         a = Posts.objects.get(id=pk)
-        form = PostsForm(request.data)
+        form = PostsForm(request.data,request.FILES,instance=a)
         if form.is_valid():
             if a.nickname == nickname:
-                a.title = request.data.get('title')
-                a.content = request.data.get('content')
-                # a.image = request.data.get('image')
-                a.save()
+                form.save()
                 aa = Poststag.objects.filter(posts=a.id)
                 aa.delete()       
                 for b in objectsid:             
@@ -379,12 +377,15 @@ class CommentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CommentSerializer
 
     
-    def update(self,request,pk):
+    def update(self,request,pk,**kwargs):
         a = Comment.objects.get(id=pk)
+        form = CommentForm(request.data,instance=a)
         if a.nickname == self.request.data.get('nickname'):
-            a.comment = self.request.data.get('comment')
-            a.save()
-            return Response(status=status.HTTP_200_OK)
+            if form.is_valid():
+                form.save()
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
     
@@ -395,7 +396,6 @@ class CommentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        
 
 class BoardAPIView(generics.ListAPIView):
     
@@ -407,27 +407,17 @@ class BoardAPIView(generics.ListAPIView):
     search_fields = ['title','content']
     
     def post(self,request):
-        form = BoardForm(request.data)
         if request.data.get('username') == 'admin':
+            form = NoticeForm(request.data,request.FILES)
             if form.is_valid():
-                Notice.objects.create(
-                username = request.data.get('username'),
-                title = request.data.get('title'),
-                content = request.data.get('content'),
-                image = request.data.get('image'),
-            )
+                form.save()
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
-
+        
+        form = BoardForm(request.data,request.FILES)
         if form.is_valid():
-            Board.objects.create(
-                username = request.data.get('username'),
-                title = request.data.get('title'),
-                content = request.data.get('content'),
-                image = request.data.get('image'),
-            )
-
+            form.save()
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -444,14 +434,12 @@ class BoardDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         serializers = BoardSerializer(hitcount)
         return Response(serializers.data)
 
-    def update(self,request,pk):
+    def update(self,request,pk,**kwargs):
         a = Board.objects.get(id=pk)
-        form = BoardForm(request.data)
+        form = BoardForm(request.data,request.FILES,instance=a)
         if a.username == self.request.data.get('username'):
             if form.is_valid():
-                a.content = self.request.data.get('content')
-                a.title = self.request.data.get('title')
-                a.save()
+                form.save()
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -466,6 +454,11 @@ class BoardDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
+class NoticeAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = NoticeSerializer
+    queryset = Notice.objects.all().order_by('-create_date')
+        
 class NoticeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Notice.objects.all()
@@ -477,24 +470,27 @@ class NoticeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         hitcount.save()
         serializers = NoticeSerializer(hitcount)
         return Response(serializers.data)
-    
- 
+
     def update(self,request,pk):
-        notice = get_object_or_404(Notice,pk=pk)
-        serializer = NoticeSerializer(notice,data=request.data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=200)
+        a = Notice.objects.get(id=pk)
+        form = NoticeForm(request.data,request.FILES,instance=a)
+        if a.username == request.data.get('username'):
+            if form.is_valid():
+                form.save()
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(serializer.errors,status=400)
-                    
-        
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
     def destroy(self, request,pk):
         a = Notice.objects.get(id=pk)
-        self.perform_destroy(a)
-        return Response(status=status.HTTP_200_OK)
-
+        if a.username == request.data.get('username'):
+            self.perform_destroy(a)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         
 class BoardCommentAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -508,13 +504,12 @@ class BoardCommentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BoardCommentSerializer
     
         
-    def update(self,request,pk):
+    def update(self,request,pk,**kwargs):
         a = BoardComment.objects.get(id=pk)
-        form = BoardCommentForm(request.data)
+        form = BoardCommentForm(request.data,instance=a)
         if a.username == self.request.data.get('username'):
             if form.is_valid():
-                a.comment = self.request.data.get('comment')
-                a.save()
+                form.save()
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(form.errors,status=status.HTTP_400_BAD_REQUEST)

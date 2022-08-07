@@ -1,5 +1,7 @@
+from distutils.errors import CompileError
+from xml.etree.ElementTree import Comment
 from django.contrib.auth.forms import UserCreationForm,UserChangeForm,SetPasswordForm
-from .models import Board, BoardComment, Posts, User
+from .models import *
 from django import forms
 
 class SignupForm(UserCreationForm):
@@ -12,6 +14,11 @@ class BoardForm(forms.ModelForm):
           model = Board
           fields = ['username','title','content','image']
           
+class NoticeForm(forms.ModelForm):
+    class Meta:
+        model = Notice
+        fields = ['username','title','content','image']
+          
 class PostsForm(forms.ModelForm):
       class Meta:
           model = Posts
@@ -21,3 +28,10 @@ class BoardCommentForm(forms.ModelForm):
       class Meta:
           model = BoardComment
           fields = ['username','comment']
+          
+class CommentForm(forms.ModelForm):
+      class Meta:
+          model = Comment
+          fields = ['comment']
+        
+        

@@ -83,6 +83,7 @@ urlpatterns = [
     
     path('objectssearch/', views.ObjectsPostsSearch.as_view()),
     
+    path('notice/', views.NoticeAPIView.as_view()),
     path('notice/<int:pk>/', views.NoticeDetailAPIView.as_view()),
     
     path('accounts/activate/<str:uidb64>/<str:token>', Activate.as_view()),

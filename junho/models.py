@@ -83,7 +83,7 @@ class Poststag(models.Model):
 
 class Comment(models.Model):
     id = models.AutoField(primary_key=True)
-    comment = models.CharField(max_length=100)
+    comment = models.CharField(max_length=100,blank=False, null=False)
     nickname = models.CharField(max_length=10,blank=False, null=False)
     post_id = models.ForeignKey('Posts',related_name='post',on_delete=models.CASCADE,db_column='post_id',null=True, blank=True)
     parent = models.ForeignKey('self', related_name='reply', on_delete=models.CASCADE, null=True, blank=True)
