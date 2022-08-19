@@ -4,7 +4,7 @@
 
 아직 개발중인 웹사이트이고 꾸준히 수정중입니다.  
 
-Test ID = admin@naver.com
+Test ID = admin@naver.com  
 Test ID Passwd = rhwkvjscl@56!!
 
 1. 아이템 이름 : BESTCHOICE (http://54.180.193.83:8080/)  
