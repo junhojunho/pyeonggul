@@ -1,2 +1,2 @@
-*.javascript linguist-detectable=False
-*.css linguist-detectable=False
+static/** javascript linguist-detectable=False
+static/** linguist-detectable=False
